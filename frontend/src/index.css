@@ -1,0 +1,246 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap');
+
+:root {
+  /* Ultra-Premium Obsidian & Aurora Palette */
+  --primary: #00ff9f;
+  /* Electric Mint */
+  --primary-rgb: 0, 255, 159;
+  --secondary: #6e00ff;
+  /* Vivid Violet */
+  --accent: #ff0055;
+  /* Cyber Rose */
+  --bg-black: #020408;
+  --bg-obsidian: #0a0d14;
+  --surface: rgba(16, 22, 35, 0.6);
+  --text-pure: #ffffff;
+  --text-muted: #8b949e;
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --neon-glow: 0 0 20px rgba(0, 255, 159, 0.3);
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--bg-black);
+  color: var(--text-pure);
+  font-family: var(--font-display);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* World-Class Background Mesh */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(110, 0, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(0, 255, 159, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(10, 13, 20, 1) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Obsidian Card Engine */
+.obsidian-card {
+  background: var(--surface);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.obsidian-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.obsidian-card:hover {
+  transform: translateY(-10px) scale(1.01);
+  border-color: rgba(var(--primary-rgb), 0.4);
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(var(--primary-rgb), 0.1);
+}
+
+/* Hyper-Buttons */
+.btn-hyper {
+  position: relative;
+  background: var(--text-pure);
+  color: var(--bg-black);
+  border: none;
+  padding: 18px 36px;
+  border-radius: 100px;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn-hyper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+}
+
+.btn-hyper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: 0.5s;
+}
+
+.btn-hyper:hover::before {
+  left: 100%;
+}
+
+/* Next-Gen Inputs */
+.hyper-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  padding: 20px 24px;
+  border-radius: 18px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hyper-input:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+/* Advanced Typography */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.title-xl {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 900;
+  background: linear-gradient(to bottom right, #fff 30%, rgba(255, 255, 255, 0.4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.status-glow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-High {
+  background: rgba(255, 0, 85, 0.1);
+  color: #ff0055;
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.2);
+}
+
+.status-Medium {
+  background: rgba(255, 170, 0, 0.1);
+  color: #ffaa00;
+  box-shadow: 0 0 20px rgba(255, 170, 0, 0.2);
+}
+
+.status-Low {
+  background: rgba(0, 255, 159, 0.1);
+  color: #00ff9f;
+  box-shadow: 0 0 20px rgba(0, 255, 159, 0.2);
+}
+
+/* Layouts */
+header.obsidian-header {
+  padding: 1.5rem 60px;
+  background: rgba(2, 4, 8, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.content-area {
+  padding: 60px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+/* Micro-animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.floating {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-reveal {
+  animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
