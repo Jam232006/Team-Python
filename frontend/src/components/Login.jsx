@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Eye, EyeOff, Terminal, Cpu, ArrowRight, Zap } from 'lucide-react';
+import { Shield, Eye, EyeOff, Terminal, Cpu, ArrowRight, Zap, Users, BookOpen, Lock } from 'lucide-react';
 import axios from 'axios';
 
 const Login = () => {
@@ -90,7 +90,7 @@ const Login = () => {
                         fontWeight: 600,
                         letterSpacing: '0.1em'
                     }}>
-                        <Terminal size={14} /> SYSTEM v2.0 READY
+                        <Terminal size={14} /> {isRegistering ? 'NEW ENTITY REGISTRATION' : 'SYSTEM v2.0 READY'}
                     </div>
                 </div>
 
@@ -172,26 +172,71 @@ const Login = () => {
 
                     {isRegistering && (
                         <div style={{ marginBottom: '32px' }}>
-                            <select
-                                value={role}
-                                onChange={(e) => setRole(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '20px',
-                                    background: 'rgba(255, 255, 255, 0.03)',
-                                    border: '1px solid var(--glass-border)',
-                                    borderRadius: '18px',
-                                    color: 'white',
-                                    fontSize: '1rem',
-                                    fontWeight: 600,
-                                    appearance: 'none',
-                                    outline: 'none'
-                                }}
-                            >
-                                <option value="student">ENTITY: STUDENT</option>
-                                <option value="mentor">ENTITY: MENTOR</option>
-                                <option value="admin">ENTITY: ADMINISTRATOR</option>
-                            </select>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.12em', marginBottom: '14px' }}>
+                                SELECT ACCESS TIER
+                            </p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {[
+                                    {
+                                        value: 'student',
+                                        icon: <BookOpen size={20} />,
+                                        label: 'TIER 3 — STUDENT TERMINAL',
+                                        desc: 'Log activity, track assignments & monitor your performance trajectory.'
+                                    },
+                                    {
+                                        value: 'mentor',
+                                        icon: <Users size={20} />,
+                                        label: 'TIER 2 — MENTOR CONSOLE',
+                                        desc: 'Oversee your assigned student squad and receive behavioral risk alerts.'
+                                    }
+                                ].map(tier => (
+                                    <div
+                                        key={tier.value}
+                                        onClick={() => setRole(tier.value)}
+                                        style={{
+                                            padding: '18px 20px',
+                                            borderRadius: '16px',
+                                            border: `2px solid ${role === tier.value ? 'var(--primary)' : 'var(--glass-border)'}`,
+                                            background: role === tier.value ? 'rgba(0, 255, 159, 0.06)' : 'rgba(255,255,255,0.02)',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: '16px',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        <div style={{ color: role === tier.value ? 'var(--primary)' : 'var(--text-muted)', marginTop: '2px', flexShrink: 0 }}>
+                                            {tier.icon}
+                                        </div>
+                                        <div>
+                                            <p style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.08em', color: role === tier.value ? 'var(--primary)' : 'var(--text-pure)', marginBottom: '4px' }}>
+                                                {tier.label}
+                                            </p>
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{tier.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div style={{
+                                    padding: '16px 20px',
+                                    borderRadius: '16px',
+                                    border: '1px dashed rgba(255,0,85,0.3)',
+                                    background: 'rgba(255,0,85,0.03)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '14px',
+                                    opacity: 0.7
+                                }}>
+                                    <Lock size={18} color="var(--accent)" style={{ flexShrink: 0 }} />
+                                    <div>
+                                        <p style={{ fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: '2px' }}>
+                                            TIER 1 — ADMIN TERMINAL
+                                        </p>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                            Restricted. Admin accounts are provisioned exclusively by an existing administrator.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
