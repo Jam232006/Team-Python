@@ -4,7 +4,7 @@ const db = require('../db/database');
 const { calculateRisk } = require('../utils/riskEngine');
 const { onAssignmentLogged } = require('../utils/alertService');
 
-// Log activity for a student.
+// log activity for a student.
 // Body: { user_id, activity_type, title, submission_date, due_date, status, response_time_days }
 router.post('/log', (req, res) => {
     const { user_id, activity_type, title, submission_date, due_date, status, response_time_days } = req.body;
@@ -18,17 +18,12 @@ router.post('/log', (req, res) => {
             if (insertErr) return res.status(500).json({ error: insertErr.message });
             const logId = this.lastID;
 
-            // Respond immediately — background work follows
             res.json({ message: 'Activity logged', logId });
-
-            // ── Background: risk recalculation ──
             calculateRisk(user_id).catch(e => console.error('[RiskEngine]', e.message));
-
-            // ── Background: multi-role assignment alerts (assignment / quiz only) ──
             if (activity_type === 'assignment' || activity_type === 'quiz') {
                 db.get(
                     `SELECT u.name AS student_name, u.mentor_id,
-                            m.name AS mentor_name
+                             m.name AS mentor_name
                      FROM users u
                      LEFT JOIN users m ON u.mentor_id = m.user_id
                      WHERE u.user_id = ?`,
@@ -52,7 +47,7 @@ router.post('/log', (req, res) => {
     );
 });
 
-// Get activity logs for a user
+// get activity logs for a user
 router.get('/:userId', (req, res) => {
     db.all(
         `SELECT * FROM activity_logs WHERE user_id = ? ORDER BY submission_date DESC`,

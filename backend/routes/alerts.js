@@ -2,10 +2,9 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 
-// ── IMPORTANT: specific paths must come before wildcard /:userId ──
+// IMPORTANT: specific paths must come before wildcard /:userId. express matches routes in order.
 
-// Get all unresolved Admin alerts — alias kept for backward compatibility
-// Filters by recipient_role = 'admin' so only admin-targeted alerts are returned.
+// get all unresolved Admin alerts — alias kept for backward compatibility
 router.get('/all/active', (req, res) => {
     db.all(
         `SELECT a.*,
@@ -24,7 +23,7 @@ router.get('/all/active', (req, res) => {
     );
 });
 
-// Get all alerts (resolved + unresolved) for Admin overview
+// get all alerts (resolved + unresolved) for Admin overview
 router.get('/all/history', (req, res) => {
     db.all(
         `SELECT a.*, u.name AS user_name
@@ -39,7 +38,6 @@ router.get('/all/history', (req, res) => {
     );
 });
 
-// ── Role-specific alert feeds ─────────────────────────────────────────────────
 
 // STUDENT: their own alerts (submitted confirmations, reminders, overdue, risk)
 router.get('/for/student/:userId', (req, res) => {
@@ -111,7 +109,6 @@ router.get('/for/admin', (req, res) => {
     );
 });
 
-// ── Alert management ──────────────────────────────────────────────────────────
 // Manual alert creation with full dedup using recipient_id + recipient_role + alert_type
 router.post('/create', (req, res) => {
     const { user_id, recipient_id = null, recipient_role = 'admin', alert_type = 'general', risk_level = null, alert_message } = req.body;
@@ -143,7 +140,7 @@ router.post('/create', (req, res) => {
     );
 });
 
-// Resolve a single alert
+// resolve a single alert
 router.patch('/:alertId/resolve', (req, res) => {
     db.run(
         `UPDATE alerts SET resolved_status = 1 WHERE alert_id = ?`,
@@ -156,7 +153,7 @@ router.patch('/:alertId/resolve', (req, res) => {
     );
 });
 
-// Resolve all open alerts for a user
+// resolve all open alerts for a user
 router.patch('/user/:userId/resolve-all', (req, res) => {
     db.run(
         `UPDATE alerts SET resolved_status = 1 WHERE user_id = ? AND resolved_status = 0`,
@@ -168,7 +165,7 @@ router.patch('/user/:userId/resolve-all', (req, res) => {
     );
 });
 
-// Get all alerts for a specific user
+// get all alerts for a specific user
 router.get('/:userId', (req, res) => {
     db.all(
         `SELECT * FROM alerts WHERE user_id = ? ORDER BY alert_date DESC`,

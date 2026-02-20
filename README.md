@@ -4,49 +4,23 @@
 ![Status](https://img.shields.io/badge/Status-Stabilized-6e00ff?style=for-the-badge)
 ![UI](https://img.shields.io/badge/Design-Obsidian%20%26%20Aurora-ff0055?style=for-the-badge)
 
-## 🌌 Project Overview
-**InsightShield** is a world-class, full-stack behavioral intelligence system designed to detect early disengagement and "silent failure" risk in students or trainees. By analyzing metadata-driven activity patterns—such as submission delays and inactivity clusters—the system provides mentors and administrators with real-time, actionable insights to intervene before failure occurs.
+## Project Overview
+InsightShield is a world-class, full-stack behavioral intelligence system designed to detect early disengagement and "silent failure" risk in students or trainees. By analyzing metadata-driven activity patterns—such as submission delays and inactivity clusters—the system provides mentors and administrators with real-time, actionable insights to intervene before failure occurs.
 
-Powered by a **Rule-Based Behavioral Deviation Engine**, the system categorizes users into dynamic risk levels (Low, Medium, High) based on their interaction with assignments, quizzes, and the platform itself.
+Powered by a Rule-Based Behavioral Deviation Engine, the system categorizes users into dynamic risk levels (Low, Medium, High) based on their interaction with assignments, quizzes, and the platform itself.
 
+## Core Functional Architecture
+
+### Behavioral Risk Engine
+  The system uses a combined scoring system with various factors included but not limited to : submission times, assignment scores, submission frequencies, streaks, quiz scores, and many other factors.
+
+  The optimized formula weights points adaptively for each category and gives a sum average of risk factor, which is used to judge students.
+
+## Alert System
+  The alert system is just a notification zone which provides alerts to all three tiers. It has essential info, and is the main way to join a class.
 ---
 
-## 💎 World-Class UI/UX: "Obsidian & Aurora"
-InsightShield features a premium, high-performance interface designed for maximum visual impact and data density:
-- **Obsidian Cards**: 40px backdrop blurs with ultra-refined glassmorphism.
-- **Aurora Mesh**: A dynamic, shifting radial gradient background for deep visual immersion.
-- **Bento-Grid Dashboards**: State-of-the-art modular layouts for high-speed data interpretation.
-- **Hyper-Interactions**: Custom micro-animations and neon-glow focus states.
-
----
-
-## 🛠️ Core Functional Architecture
-
-### 1. Multi-Role Ecosystem
-- **Admin Terminal**: Global network intelligence, risk distribution clusters, and critical alert monitoring.
-- **Mentor Console**: Squadron-level monitoring with node scanning and engagement probability metrics.
-- **Student Terminal**: Personal activity logger with performance trajectory visualization.
-
-### 2. Behavioral Risk Engine (The Logic)
-The system calculates a **Total Risk Score** based on three primary metrics:
-- **Metric 1: Submission Integrity**
-  - On-time: 0 points
-  - 1–2 days late: +1 point
-  - Missed: +3 points
-- **Metric 2: Activity Deviation**
-  - Compared against a user-specific 4-week baseline.
-  - 10% drop: +1 | 25% drop: +2 | 40%+ drop: +3
-- **Metric 3: Temporal Inactivity**
-  - 3 days: +1 | 7 days: +2 | 14 days: +4
-
-**Classification Logic**:
-- `0–3`: **CLEAR (Low)**
-- `4–6`: **ATTENTION (Medium)**
-- `7+`: **CRITICAL (High)** triggers automatic mentor alerts.
-
----
-
-## 🚀 Tech Stack & Infrastructure
+## Tech Stack & Infrastructure
 - **Frontend**: React 18, Vite, Chart.js, Lucide-React, Framer Motion.
 - **Backend**: Express.js (Node.js), RESTful API.
 - **Database**: SQLite3 (Persistent behavioral storage).
@@ -55,7 +29,7 @@ The system calculates a **Total Risk Score** based on three primary metrics:
 
 ---
 
-## 🔑 Getting Started
+## Getting Started
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) installed on your machine.
@@ -79,23 +53,28 @@ The system calculates a **Total Risk Score** based on three primary metrics:
    ```bash
    cd ../frontend
    npm install
-   npm run build # Generates optimized production assets
-   npm run dev   # Or serve the build
+   npm run build 
+   npm run dev   
    ```
 
-### Demo Protocols
-| Role | Identifier | Security Key |
-| :--- | :--- | :--- |
-| **Admin** | `admin@insight.com` | `password123` |
-| **Mentor** | `sarah@insight.com` | `password123` |
-| **Student** | `bob@student.com` | `password123` |
+### Security & Privacy
+  -The system only analyzes metadata (timestamps, submission status).
+  -Uses a deterministic, rule-based engine which uses pure data for transparent, explainable alerts (No AI based system which can hallucinate or be manipulated easily for such things).
+  -Mentors can only see data for their assigned entity squadron.
 
----
+## Future Scope
+  -The assignment system is just a demo - we intend to make this a full extension for existing systems like Classroom from which we can provide full analytics to the end user.
+  -Get a server instead of running locally
+  -Redis caching and optimization all across the board
+  -Make the frontend more complex
+---------
+v1 Edits:
+Added #pragma and write ahead logging for the SQL tables.
+pragma-sync, increased cache size (10 MB is enough, maybe?), temp storage w/ RAM, 30 GB MMAP
+added more indexes for direct queries
+lazy dbs for every server restart, reducing to 0.9 s startup (will be changed later.)
+memoized react components for dashboards since they use similar stuff
 
-## 🛡️ Security & Privacy
-- **No Private Scanning**: The system only analyzes metadata (timestamps, submission status).
-- **Zero AI Dependency**: Uses a deterministic, rule-based engine for transparent, explainable alerts.
-- **Role Isolation**: Mentors can only see data for their assigned entity squadron.
 
 ---
 © 2026 Team-Python | InsightShield – Advanced Behavioral Intelligence.

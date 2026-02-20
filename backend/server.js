@@ -18,7 +18,8 @@ const activityRoutes   = require('./routes/activity');
 const riskRoutes       = require('./routes/risk');
 const alertRoutes      = require('./routes/alerts');
 const classRoutes      = require('./routes/classes');
-const assignmentRoutes = require('./routes/assignments');
+const assignmentRoutes = require('./routes/assignments_v2');
+const inviteRoutes     = require('./routes/invites');
 
 app.use('/api/auth',        authRoutes);
 app.use('/api/users',       userRoutes);
@@ -27,6 +28,7 @@ app.use('/api/risk',        riskRoutes);
 app.use('/api/alerts',      alertRoutes);
 app.use('/api/classes',     classRoutes);
 app.use('/api/assignments', assignmentRoutes);
+app.use('/api/invites',     inviteRoutes);
 
 app.get('/', (req, res) => {
     res.send('InsightShield API is running...');

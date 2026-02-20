@@ -1,33 +1,5 @@
 const db = require('../db/database');
 
-/**
- * InsightShield Alert Service
- *
- * Every alert is targeted at a specific recipient (recipient_id) or
- * broadcast to an entire role (recipient_role = 'admin', recipient_id = NULL).
- *
- * Alert types
- * ───────────
- * STUDENT
- *   assignment_submitted  – confirmation after they submit
- *   assignment_reminder   – due-date reminder when assignment is pending
- *   assignment_overdue    – their submission window has closed
- *
- * MENTOR
- *   assignment_due        – an assignment is upcoming for one of their students
- *   assignment_date_passed – due date has passed for a student's assignment
- *   risk_change           – a student's risk level has been updated
- *
- * ADMIN
- *   assignment_assigned   – a mentor assigned work to a student
- *   assignment_date_passed – due date passed for a student in a mentor's group
- *   risk_alert            – student has reached High risk
- *
- * Deduplication: a new alert is skipped if an identical open alert
- * (same user_id + recipient_id + recipient_role + alert_type) already exists.
- */
-
-// ── Base creation with dedup ──────────────────────────────────────────────────
 const createAlert = ({ subjectUserId, recipientId = null, recipientRole, alertType, message, riskLevel = null }) => {
     return new Promise((resolve) => {
         // NULL-safe comparison: use IS instead of = so NULL IS NULL works correctly
@@ -60,11 +32,9 @@ const createAlert = ({ subjectUserId, recipientId = null, recipientRole, alertTy
     });
 };
 
-// ── Assignment / activity alerts ──────────────────────────────────────────────
 /**
  * Called whenever an assignment or quiz is logged for a student.
- * Creates up to three alerts: one for the student, one for their mentor,
- * and one broadcast to all admins.
+ * Creates up to three alerts: one for the student, one for their mentor, and one broadcast to all admins.
  *
  * @param {Object} opts
  * @param {number}  opts.studentId
@@ -88,7 +58,6 @@ const onAssignmentLogged = async ({
     const isOverdue  = isPast || status === 'missed';
     const mName      = mentorName || 'Unknown Mentor';
 
-    // ── STUDENT alerts ────────────────────────────────────────────────────────
     if (status === 'submitted') {
         await createAlert({
             subjectUserId: studentId,
@@ -108,7 +77,6 @@ const onAssignmentLogged = async ({
     }
 
     if (isOverdue) {
-        // Resolve any open reminder for this item first, then issue overdue
         db.run(
             `UPDATE alerts SET resolved_status = 1
              WHERE user_id = ? AND recipient_id = ? AND alert_type = 'assignment_reminder' AND resolved_status = 0`,
@@ -123,7 +91,6 @@ const onAssignmentLogged = async ({
         });
     }
 
-    // ── MENTOR alerts ─────────────────────────────────────────────────────────
     if (mentorId) {
         if (!isOverdue && status === 'pending') {
             await createAlert({
@@ -136,7 +103,6 @@ const onAssignmentLogged = async ({
         }
 
         if (isOverdue) {
-            // Resolve the "upcoming" alert, replace with "passed"
             db.run(
                 `UPDATE alerts SET resolved_status = 1
                  WHERE user_id = ? AND recipient_id = ? AND alert_type = 'assignment_due' AND resolved_status = 0`,
@@ -152,7 +118,6 @@ const onAssignmentLogged = async ({
         }
     }
 
-    // ── ADMIN alerts (broadcast — recipient_id = NULL) ────────────────────────
     if (!isOverdue) {
         await createAlert({
             subjectUserId: studentId,
@@ -172,7 +137,6 @@ const onAssignmentLogged = async ({
     }
 };
 
-// ── Risk-level alerts ─────────────────────────────────────────────────────────
 /**
  * Called by the risk engine after each recalculation.
  * Creates mentor and admin risk alerts; student risk alert handled
@@ -200,7 +164,6 @@ const onRiskLevelChange = async ({ studentId, studentName, mentorId, score, risk
         });
     }
 
-    // ── ADMIN: broadcast on High risk only ───────────────────────────────────
     if (riskLevel === 'High') {
         await createAlert({
             subjectUserId: studentId,

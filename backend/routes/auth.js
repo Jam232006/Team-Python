@@ -6,7 +6,7 @@ const db = require('../db/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key';
 
-// Middleware: require a valid JWT with admin role
+// middleware to check for admin role
 const requireAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: 'No token provided' });
@@ -21,15 +21,14 @@ const requireAdmin = (req, res, next) => {
     }
 };
 
-// PUBLIC: Register — Tier 2 (Mentor) and Tier 3 (Student) only
-// Admin accounts (Tier 1) can only be provisioned via the Admin Terminal.
+// registration (open to all, but role must be valid)
 router.post('/register', async (req, res) => {
     const { name, email, password, role } = req.body;
 
-    const allowedRoles = ['student', 'mentor'];
+    const allowedRoles = ['student', 'mentor', 'admin'];
     if (!allowedRoles.includes(role)) {
         return res.status(403).json({
-            error: 'Admin Terminal accounts must be provisioned by an existing administrator. Self-registration is limited to Mentor Console and Student Terminal tiers.'
+            error: 'Invalid role. Allowed roles: admin, mentor, student'
         });
     }
 
@@ -48,8 +47,7 @@ router.post('/register', async (req, res) => {
                 }
                 return res.status(400).json({ error: err.message });
             }
-
-            // Create an initial risk score entry for new students
+            // set initial risk level for students (might be changed later to modify according to past, but forrr now runs every reload)
             if (role === 'student') {
                 db.run(`INSERT INTO risk_scores (user_id, baseline_activity_score, current_activity_score, risk_score, risk_level) VALUES (?, 10, 10, 0, 'Low')`,
                     [this.lastID]);
@@ -60,7 +58,7 @@ router.post('/register', async (req, res) => {
     );
 });
 
-// ADMIN ONLY: Provision a user of any tier (admin / mentor / student)
+// admin - provision new accounts (admin only)
 router.post('/admin/create-user', requireAdmin, async (req, res) => {
     const { name, email, password, role, mentor_id } = req.body;
 
@@ -87,7 +85,7 @@ router.post('/admin/create-user', requireAdmin, async (req, res) => {
                 return res.status(400).json({ error: err.message });
             }
 
-            // Initialise risk entry for new students
+            // set initial risk level for students (might be changed later to modify according to past, but for now runs every reload)
             if (role === 'student') {
                 db.run(`INSERT INTO risk_scores (user_id, baseline_activity_score, current_activity_score, risk_score, risk_level) VALUES (?, 10, 10, 0, 'Low')`,
                     [this.lastID]);
@@ -98,7 +96,7 @@ router.post('/admin/create-user', requireAdmin, async (req, res) => {
     );
 });
 
-// Login
+// login (fuck you OAuth, JWT is superior)
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
 

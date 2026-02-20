@@ -6,7 +6,6 @@ const crypto  = require('crypto');
 // Generate a unique, readable 6-char invite code
 const genInviteCode = () => crypto.randomBytes(3).toString('hex').toUpperCase();
 
-// ── Create a class ────────────────────────────────────────────────────────────
 // POST /api/classes
 // Body: { mentor_id, name, description? }
 router.post('/', (req, res) => {
@@ -29,7 +28,6 @@ router.post('/', (req, res) => {
     tryInsert();
 });
 
-// ── Get all classes for a mentor ──────────────────────────────────────────────
 // GET /api/classes/mentor/:mentorId
 router.get('/mentor/:mentorId', (req, res) => {
     db.all(
@@ -48,7 +46,6 @@ router.get('/mentor/:mentorId', (req, res) => {
     );
 });
 
-// ── Get members of a class ────────────────────────────────────────────────────
 // GET /api/classes/:classId/members
 router.get('/:classId/members', (req, res) => {
     db.all(
@@ -66,7 +63,6 @@ router.get('/:classId/members', (req, res) => {
     );
 });
 
-// ── Get invite code for a class (mentor can share this) ───────────────────────
 // GET /api/classes/:classId/invite
 router.get('/:classId/invite', (req, res) => {
     db.get(`SELECT invite_code, name FROM classes WHERE class_id = ?`, [req.params.classId], (err, row) => {
@@ -76,7 +72,6 @@ router.get('/:classId/invite', (req, res) => {
     });
 });
 
-// ── Regenerate invite code ────────────────────────────────────────────────────
 // POST /api/classes/:classId/invite/regenerate
 router.post('/:classId/invite/regenerate', (req, res) => {
     const tryUpdate = (attempts = 0) => {
@@ -91,7 +86,6 @@ router.post('/:classId/invite/regenerate', (req, res) => {
     tryUpdate();
 });
 
-// ── Student joins a class via invite code ─────────────────────────────────────
 // POST /api/classes/join
 // Body: { student_id, invite_code }
 router.post('/join', (req, res) => {
@@ -125,7 +119,6 @@ router.post('/join', (req, res) => {
     });
 });
 
-// ── Mentor manually adds a student to a class ─────────────────────────────────
 // POST /api/classes/:classId/members
 // Body: { student_id }
 router.post('/:classId/members', (req, res) => {
@@ -150,7 +143,6 @@ router.post('/:classId/members', (req, res) => {
     });
 });
 
-// ── Remove a student from a class ────────────────────────────────────────────
 // DELETE /api/classes/:classId/members/:studentId
 router.delete('/:classId/members/:studentId', (req, res) => {
     db.run(
@@ -164,7 +156,27 @@ router.delete('/:classId/members/:studentId', (req, res) => {
     );
 });
 
-// ── Get single class detail ───────────────────────────────────────────────────
+// GET /api/classes/student/:studentId
+router.get('/student/:studentId', (req, res) => {
+    db.all(
+        `SELECT c.*, u.name as mentor_name, u.email as mentor_email,
+                COUNT(DISTINCT cm.student_id) as member_count
+         FROM class_members my_cm
+         JOIN classes c ON my_cm.class_id = c.class_id
+         JOIN users u ON c.mentor_id = u.user_id
+         LEFT JOIN class_members cm ON c.class_id = cm.class_id
+         WHERE my_cm.student_id = ?
+         GROUP BY c.class_id
+         ORDER BY my_cm.joined_at DESC`,
+        [req.params.studentId],
+        (err, rows) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json(rows);
+        }
+    );
+});
+
+// GET /api/classes/:classId
 router.get('/:classId', (req, res) => {
     db.get(`SELECT * FROM classes WHERE class_id = ?`, [req.params.classId], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
