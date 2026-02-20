@@ -101,18 +101,3 @@ or:
 - Enhanced frontend visualizations
 
 ---
-
-Team-Python 2026
-  -Redis caching and optimization all across the board
-  -Make the frontend more complex
----------
-v1 Edits:
-Added #pragma and write ahead logging for the SQL tables.
-pragma-sync, increased cache size (10 MB is enough, maybe?), temp storage w/ RAM, 30 GB MMAP
-added more indexes for direct queries
-lazy dbs for every server restart, reducing to 0.9 s startup (will be changed later.)
-memoized react components for dashboards since they use similar stuff
-
-
----
-© 2026 Team-Python | InsightShield – Advanced Behavioral Intelligence.
