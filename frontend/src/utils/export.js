@@ -1,14 +1,17 @@
 // Export utilities for generating reports
+import { ensureArray } from './helpers';
+
 export const exportToCSV = (data, filename = 'export.csv') => {
-    if (!data || data.length === 0) {
+    const validData = ensureArray(data);
+    if (validData.length === 0) {
         alert('No data to export');
         return;
     }
 
-    const headers = Object.keys(data[0]);
+    const headers = Object.keys(validData[0]);
     const csvContent = [
         headers.join(','),
-        ...data.map(row => headers.map(header => {
+        ...validData.map(row => headers.map(header => {
             const value = row[header];
             // Handle values with commas or newlines
             if (typeof value === 'string' && (value.includes(',') || value.includes('\n'))) {
@@ -22,7 +25,7 @@ export const exportToCSV = (data, filename = 'export.csv') => {
 };
 
 export const exportStudentReport = (students) => {
-    const data = students.map(s => ({
+    const data = ensureArray(students).map(s => ({
         Name: s.name,
         Email: s.email,
         'Risk Level': s.risk_level || 'Unknown',
@@ -34,7 +37,7 @@ export const exportStudentReport = (students) => {
 };
 
 export const exportAssignmentReport = (assignments) => {
-    const data = assignments.map(a => ({
+    const data = ensureArray(assignments).map(a => ({
         Title: a.title,
         Class: a.class_name || 'N/A',
         'Due Date': new Date(a.due_date).toLocaleDateString(),
@@ -47,7 +50,7 @@ export const exportAssignmentReport = (assignments) => {
 };
 
 export const exportClassReport = (classes) => {
-    const data = classes.map(c => ({
+    const data = ensureArray(classes).map(c => ({
         'Class Name': c.name,
         Description: c.description || 'No description',
         'Student Count': c.student_count || 0,
@@ -75,27 +78,32 @@ export const exportJSON = (data, filename = 'export.json') => {
 };
 
 export const generateSummaryReport = (students, classes, assignments, alerts) => {
+    const safeStudents = ensureArray(students);
+    const safeClasses = ensureArray(classes);
+    const safeAssignments = ensureArray(assignments);
+    const safeAlerts = ensureArray(alerts);
+    
     const report = {
         generated_at: new Date().toISOString(),
         summary: {
-            total_students: students.length,
-            high_risk_students: students.filter(s => s.risk_level === 'High').length,
-            medium_risk_students: students.filter(s => s.risk_level === 'Medium').length,
-            low_risk_students: students.filter(s => s.risk_level === 'Low').length,
-            total_classes: classes.length,
-            total_assignments: assignments.length,
-            pending_alerts: alerts.filter(a => !a.resolved_status).length
+            total_students: safeStudents.length,
+            high_risk_students: safeStudents.filter(s => s.risk_level === 'High').length,
+            medium_risk_students: safeStudents.filter(s => s.risk_level === 'Medium').length,
+            low_risk_students: safeStudents.filter(s => s.risk_level === 'Low').length,
+            total_classes: safeClasses.length,
+            total_assignments: safeAssignments.length,
+            pending_alerts: safeAlerts.filter(a => !a.resolved_status).length
         },
-        students: students.map(s => ({
+        students: safeStudents.map(s => ({
             name: s.name,
             email: s.email,
             risk_level: s.risk_level,
             risk_score: s.risk_score
         })),
         risk_distribution: {
-            high: students.filter(s => s.risk_level === 'High').length,
-            medium: students.filter(s => s.risk_level === 'Medium').length,
-            low: students.filter(s => s.risk_level === 'Low').length
+            high: safeStudents.filter(s => s.risk_level === 'High').length,
+            medium: safeStudents.filter(s => s.risk_level === 'Medium').length,
+            low: safeStudents.filter(s => s.risk_level === 'Low').length
         }
     };
     

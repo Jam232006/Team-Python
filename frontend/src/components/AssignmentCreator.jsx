@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { Card, Button, Input } from './shared/UIComponents';
 import { api } from '../utils/api';
+import { ensureArray } from '../utils/helpers';
 
 const AssignmentCreator = ({ onBack, preSelectedClassId }) => {
     const { user } = useAuth();
@@ -118,7 +119,7 @@ const AssignmentCreator = ({ onBack, preSelectedClassId }) => {
                                 disabled={!!preSelectedClassId}
                             >
                                 <option value="">Select a class...</option>
-                                {classes.map(c => <option key={c.class_id} value={c.class_id}>{c.name}</option>)}
+                                {ensureArray(classes).map(c => <option key={c.class_id} value={c.class_id}>{c.name}</option>)}
                             </select>
                         </div>
                         <Input 

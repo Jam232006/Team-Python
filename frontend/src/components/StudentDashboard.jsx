@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Plus, BookOpen, CheckCircle, AlertTriangle, Clock, Bell, UserCheck, UserX, Activity } from 'lucide-react';
 import { Card, Button, Badge, Table, Loading, StatCard } from './shared/UIComponents';
 import { api } from '../utils/api';
-import { formatDate, percentage, getRiskColor } from '../utils/helpers';
+import { formatDate, percentage, getRiskColor, ensureArray } from '../utils/helpers';
 import AssignmentTaker from './AssignmentTaker';
 import ClassView from './ClassView';
 
@@ -28,13 +28,13 @@ const StudentDashboard = () => {
     const fetchData = async () => {
         try {
             const [rRes, aRes, alRes, invRes, pendRes, compRes, classRes] = await Promise.all([
-                api.risk.get(user.id),
-                api.activity.get(user.id),
-                api.alerts.getForStudent(user.id),
-                api.invites.getForStudent(user.id),
-                api.assignments.getPending(user.id),
-                api.assignments.getCompleted(user.id),
-                api.classes.getByStudent(user.id)
+                api.risk.get(user.id).catch(e => { console.error('Risk fetch failed:', e); return {}; }),
+                api.activity.get(user.id).catch(e => { console.error('Activity fetch failed:', e); return []; }),
+                api.alerts.getForStudent(user.id).catch(e => { console.error('Alerts fetch failed:', e); return []; }),
+                api.invites.getForStudent(user.id).catch(e => { console.error('Invites fetch failed:', e); return []; }),
+                api.assignments.getPending(user.id).catch(e => { console.error('Pending assignments fetch failed:', e); return []; }),
+                api.assignments.getCompleted(user.id).catch(e => { console.error('Completed assignments fetch failed:', e); return []; }),
+                api.classes.getByStudent(user.id).catch(e => { console.error('Classes fetch failed:', e); return []; })
             ]);
             setRisk(rRes || {});
             setActivities(aRes || []);
@@ -66,7 +66,7 @@ const StudentDashboard = () => {
     const resolveAlert = async (alertId) => {
         setResolving(alertId);
         await api.alerts.resolve(alertId);
-        setAlerts(prev => prev.filter(a => a.alert_id !== alertId));
+        setAlerts(prev => ensureArray(prev).filter(a => a.alert_id !== alertId));
         setResolving(null);
     };
 
@@ -74,7 +74,7 @@ const StudentDashboard = () => {
         setRespondingInvite(inviteId);
         try {
             await api.invites.respond(inviteId, action, user.id);
-            setInvites(prev => prev.filter(i => i.invite_id !== inviteId));
+            setInvites(prev => ensureArray(prev).filter(i => i.invite_id !== inviteId));
             alert(`Invite ${action}ed!`);
             fetchData();
         } catch (e) {
@@ -93,7 +93,7 @@ const StudentDashboard = () => {
 
     if (loading) return <Loading />;
 
-    const openAlerts = alerts.filter(a => !a.resolved_status);
+    const openAlerts = ensureArray(alerts).filter(a => !a.resolved_status);
     const riskLevel = risk?.risk_level || 'Unknown';
     const riskColor = getRiskColor(riskLevel);
 
@@ -109,17 +109,17 @@ const StudentDashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
                 <StatCard title="Risk Level" value={riskLevel} icon={<AlertTriangle size={20} />} color={riskColor} />
                 <StatCard title="Risk Score" value={risk?.risk_score?.toFixed(2) || 'N/A'} icon={<Activity size={20} />} color={riskColor} />
-                <StatCard title="Pending Assignments" value={pendingAssignments.length} icon={<Clock size={20} />} color="#fbbc04" />
-                <StatCard title="Completed" value={completedAssignments.length} icon={<CheckCircle size={20} />} color="#34a853" />
-                <StatCard title="Open Alerts" value={openAlerts.length} icon={<Bell size={20} />} color="#ea4335" />
+                <StatCard title="Pending Assignments" value={ensureArray(pendingAssignments).length} icon={<Clock size={20} />} color="#fbbc04" />
+                <StatCard title="Completed" value={ensureArray(completedAssignments).length} icon={<CheckCircle size={20} />} color="#34a853" />
+                <StatCard title="Open Alerts" value={ensureArray(openAlerts).length} icon={<Bell size={20} />} color="#ea4335" />
             </div>
 
             {/* Invites */}
-            {invites.length > 0 && (
+            {ensureArray(invites).length > 0 && (
                 <Card style={{ marginBottom: '32px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-                    <h3 style={{ margin: '0 0 16px', color: 'white' }}>Class Invitations ({invites.length})</h3>
+                    <h3 style={{ margin: '0 0 16px', color: 'white' }}>Class Invitations ({ensureArray(invites).length})</h3>
                     <div style={{ display: 'grid', gap: '12px' }}>
-                        {invites.map(inv => (
+                        {ensureArray(invites).map(inv => (
                             <div key={inv.invite_id} style={{ padding: '16px', background: 'rgba(255,255,255,0.15)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
                                     <div style={{ fontWeight: 600, marginBottom: '4px' }}>{inv.class_name}</div>
@@ -140,13 +140,13 @@ const StudentDashboard = () => {
             )}
 
             {/* Alerts */}
-            {openAlerts.length > 0 && (
+            {ensureArray(openAlerts).length > 0 && (
                 <Card style={{ marginBottom: '32px' }}>
                     <h3 style={{ margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Bell size={18} color="#fbbc04" /> Alerts ({openAlerts.length})
                     </h3>
                     <div style={{ display: 'grid', gap: '12px' }}>
-                        {openAlerts.slice(0, 5).map(a => (
+                        {ensureArray(openAlerts).slice(0, 5).map(a => (
                             <div key={a.alert_id} style={{ padding: '12px', background: '#fef7e0', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
                                     <div style={{ fontWeight: 500, marginBottom: '4px' }}>{a.message}</div>
@@ -162,11 +162,11 @@ const StudentDashboard = () => {
             )}
 
             {/* Classes */}
-            {classes.length > 0 && (
+            {ensureArray(classes).length > 0 && (
                 <div style={{ marginBottom: '32px' }}>
                     <h3 style={{ fontSize: '1.125rem', margin: '0 0 16px 0', color: '#202124' }}>My Classes</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-                        {classes.map(cls => (
+                        {ensureArray(classes).map(cls => (
                             <Card key={cls.class_id} onClick={() => { setSelectedClass(cls.class_id); setView('class-view'); }} style={{ cursor: 'pointer' }}>
                                 <h4 style={{ margin: '0 0 8px', color: '#1a73e8' }}>{cls.name}</h4>
                                 <p style={{ fontSize: '0.875rem', color: '#5f6368', margin: '0 0 12px' }}>{cls.description || 'No description'}</p>
@@ -180,9 +180,9 @@ const StudentDashboard = () => {
             {/* Pending Assignments */}
             <Card style={{ marginBottom: '32px' }}>
                 <h3 style={{ margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Clock size={18} color="#fbbc04" /> Pending Assignments ({pendingAssignments.length})
+                    <Clock size={18} color="#fbbc04" /> Pending Assignments ({ensureArray(pendingAssignments).length})
                 </h3>
-                {pendingAssignments.length > 0 ? (
+                {ensureArray(pendingAssignments).length > 0 ? (
                     <Table>
                         <thead>
                             <tr>
@@ -193,7 +193,7 @@ const StudentDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {pendingAssignments.map(a => (
+                            {ensureArray(pendingAssignments).map(a => (
                                 <tr key={a.assignment_id}>
                                     <td>
                                         <div style={{ fontWeight: 500 }}>{a.title}</div>
@@ -218,9 +218,9 @@ const StudentDashboard = () => {
             {/* Completed Assignments */}
             <Card style={{ marginBottom: '32px' }}>
                 <h3 style={{ margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <CheckCircle size={18} color="#34a853" /> Completed Assignments ({completedAssignments.length})
+                    <CheckCircle size={18} color="#34a853" /> Completed Assignments ({ensureArray(completedAssignments).length})
                 </h3>
-                {completedAssignments.length > 0 ? (
+                {ensureArray(completedAssignments).length > 0 ? (
                     <Table>
                         <thead>
                             <tr>
@@ -231,7 +231,7 @@ const StudentDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {completedAssignments.map(a => (
+                            {ensureArray(completedAssignments).map(a => (
                                 <tr key={a.assignment_id}>
                                     <td>
                                         <div style={{ fontWeight: 500 }}>{a.title}</div>
@@ -275,9 +275,9 @@ const StudentDashboard = () => {
                     </form>
                 )}
 
-                {activities.length > 0 ? (
+                {ensureArray(activities).length > 0 ? (
                     <div style={{ display: 'grid', gap: '8px' }}>
-                        {activities.slice(0, 10).map(act => (
+                        {ensureArray(activities).slice(0, 10).map(act => (
                             <div key={act.log_id} style={{ padding: '12px', background: '#f8f9fa', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
                                     <div style={{ fontWeight: 500 }}>{act.activity_type}: {act.title || act.description}</div>

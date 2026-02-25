@@ -16,6 +16,8 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, registerables } from 'chart.js';
 
+import { ensureArray } from '../utils/helpers';
+
 ChartJS.register(...registerables);
 
 const AdminDashboard = () => {
@@ -30,7 +32,7 @@ const AdminDashboard = () => {
         setResolving(alertId);
         try {
             await axios.patch(`http://localhost:5000/api/alerts/${alertId}/resolve`);
-            setAlerts(prev => prev.filter(a => a.alert_id !== alertId));
+            setAlerts(prev => ensureArray(prev).filter(a => a.alert_id !== alertId));
         } catch (e) { console.error(e); }
         setResolving(null);
     };
@@ -52,7 +54,7 @@ const AdminDashboard = () => {
                 ]);
                 const allUsers = Array.isArray(uRes.data) ? uRes.data : [];
                 setUsers(allUsers);
-                setMentors(allUsers.filter(u => u.role === 'mentor'));
+                setMentors(ensureArray(allUsers).filter(u => u.role === 'mentor'));
                 setStats(Array.isArray(sRes.data) ? sRes.data : []);
                 setAlerts(Array.isArray(aRes.data) ? aRes.data : []);
             } catch (e) {
@@ -82,7 +84,7 @@ const AdminDashboard = () => {
             const uRes = await axios.get('http://localhost:5000/api/users').catch(() => ({ data: [] }));
             const allUsers = Array.isArray(uRes.data) ? uRes.data : [];
             setUsers(allUsers);
-            setMentors(allUsers.filter(u => u.role === 'mentor'));
+            setMentors(ensureArray(allUsers).filter(u => u.role === 'mentor'));
         } catch (err) {
             setCreateError(err.response?.data?.error || 'Provisioning failed.');
         } finally {
@@ -92,7 +94,7 @@ const AdminDashboard = () => {
 
     const getCount = (level) => {
         if (!Array.isArray(stats)) return 0;
-        const item = stats.find(s => s && s.risk_level === level);
+        const item = ensureArray(stats).find(s => s && s.risk_level === level);
         return item ? item.count : 0;
     };
 
@@ -158,7 +160,7 @@ const AdminDashboard = () => {
                     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {(!alerts || alerts.length === 0) ? (
                             <p style={{ color: '#5f6368', fontSize: '0.875rem', margin: 0 }}>No alerts</p>
-                        ) : alerts.map((alert, idx) => {
+                        ) : ensureArray(alerts).map((alert, idx) => {
                             const getAlertColor = (type) => {
                                 if (type === 'risk_change') return 'var(--accent)';
                                 if (type === 'assignment_date_passed') return 'var(--warning)';
@@ -351,7 +353,7 @@ const AdminDashboard = () => {
                                     onChange={e => setNewUser({ ...newUser, mentor_id: e.target.value })}
                                 >
                                     <option value="">No mentor assigned</option>
-                                    {mentors.map(m => (
+                                    {ensureArray(mentors).map(m => (
                                         <option key={m.user_id} value={m.user_id}>{m.name} ({m.email})</option>
                                     ))}
                                 </select>

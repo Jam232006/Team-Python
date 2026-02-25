@@ -6,6 +6,8 @@ import {
     BookOpen, Award
 } from 'lucide-react';
 
+import { ensureArray } from '../utils/helpers';
+
 const API = 'http://localhost:5000/api';
 
 const AssignmentTaker = ({ assignmentId, onBack }) => {
@@ -56,7 +58,7 @@ const AssignmentTaker = ({ assignmentId, onBack }) => {
 
         setSubmitting(true);
         try {
-            const answerArray = assignment.questions.map(q => ({
+            const answerArray = ensureArray(assignment?.questions).map(q => ({
                 question_id: q.question_id,
                 answer: answers[q.question_id] || ''
             }));
@@ -116,7 +118,7 @@ const AssignmentTaker = ({ assignmentId, onBack }) => {
                 {result.answers && result.answers.length > 0 && (
                     <div className="card" style={{ padding: '32px' }}>
                         <h3 style={{ marginBottom: '24px' }}>Question Review</h3>
-                        {result.answers.map((a, i) => (
+                        {ensureArray(result?.answers).map((a, i) => (
                             <div key={i} style={{
                                 padding: '20px',
                                 marginBottom: '16px',
@@ -211,7 +213,7 @@ const AssignmentTaker = ({ assignmentId, onBack }) => {
             </div>
 
             <form onSubmit={handleSubmit}>
-                {assignment.questions.map((q, qIndex) => (
+                {ensureArray(assignment?.questions).map((q, qIndex) => (
                     <div key={q.question_id} className="card" style={{ padding: '32px', marginBottom: '20px' }}>
                         <div style={{ marginBottom: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', marginBottom: '12px' }}>
@@ -236,7 +238,7 @@ const AssignmentTaker = ({ assignmentId, onBack }) => {
 
                         {q.question_type === 'multiple_choice' ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {q.options.map((opt, optIndex) => (
+                                {ensureArray(q?.options).map((opt, optIndex) => (
                                     <label key={optIndex} style={{
                                         display: 'flex',
                                         alignItems: 'center',

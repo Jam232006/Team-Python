@@ -6,6 +6,8 @@ import {
     Target, Award, BarChart3
 } from 'lucide-react';
 
+import { ensureArray } from '../utils/helpers';
+
 const API = 'http://localhost:5000/api';
 
 const StudentProfile = ({ studentId, onBack }) => {
@@ -45,15 +47,15 @@ const StudentProfile = ({ studentId, onBack }) => {
         );
     }
 
-    const { student, risk_history, assignments, overall_stats } = profileData;
+    const { student, risk_history = [], assignments = [], overall_stats = {} } = profileData;
 
     // Prepare risk chart data
     const riskChartData = {
-        labels: risk_history.map(r => new Date(r.recorded_at).toLocaleDateString()),
+        labels: ensureArray(risk_history).map(r => new Date(r.recorded_at).toLocaleDateString()),
         datasets: [
             {
                 label: 'Risk Score',
-                data: risk_history.map(r => r.risk_score),
+                data: ensureArray(risk_history).map(r => r.risk_score),
                 borderColor: '#ff4444',
                 backgroundColor: 'rgba(255, 68, 68, 0.1)',
                 tension: 0.4,
@@ -226,7 +228,7 @@ const StudentProfile = ({ studentId, onBack }) => {
                         <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px' }}>
                             No assignments yet
                         </p>
-                    ) : assignments.map(assignment => (
+                    ) : ensureArray(assignments).map(assignment => (
                         <div key={assignment.assignment_id} style={{
                             padding: '20px',
                             background: 'var(--bg-main)',
@@ -294,7 +296,7 @@ const StudentProfile = ({ studentId, onBack }) => {
                                                 Question Breakdown:
                                             </h5>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                {assignment.questions.map((q, idx) => (
+                                                {ensureArray(assignment.questions).map((q, idx) => (
                                                     <div key={q.question_id} style={{
                                                         padding: '12px',
                                                         borderRadius: '8px',

@@ -1,3 +1,6 @@
+// Ensure value is an array (critical for preventing "is not a function" errors)
+export const ensureArray = (value) => Array.isArray(value) ? value : [];
+
 // Format date consistently
 export const formatDate = (date) => new Date(date).toLocaleDateString();
 export const formatDateTime = (date) => new Date(date).toLocaleString();
@@ -26,17 +29,22 @@ export const truncate = (text, length = 50) =>
     text?.length > length ? text.substring(0, length) + '...' : text;
 
 // Sort array by key
-export const sortBy = (arr, key, order = 'asc') => 
-    [...arr].sort((a, b) => {
+export const sortBy = (arr, key, order = 'asc') => {
+    if (!Array.isArray(arr)) return [];
+    return [...arr].sort((a, b) => {
         const valA = a[key] || 0;
         const valB = b[key] || 0;
         return order === 'asc' ? valA - valB : valB - valA;
     });
+};
 
 // Filter by search term
-export const filterBySearch = (items, searchTerm, keys) =>
-    items.filter(item =>
+export const filterBySearch = (items, searchTerm, keys) => {
+    if (!Array.isArray(items)) return [];
+    if (!searchTerm) return items;
+    return items.filter(item =>
         keys.some(key =>
             item[key]?.toLowerCase().includes(searchTerm.toLowerCase())
         )
     );
+};
