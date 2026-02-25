@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { User, ShieldAlert, Search, ChevronRight, ChevronDown, Bell, UserPlus, Plus, Download } from 'lucide-react';
 import { Card, Button, Badge, Input, Table, Loading, StatCard } from './shared/UIComponents';
 import { api } from '../utils/api';
-import { formatDate, percentage, getRiskColor, sortBy as sortHelper, filterBySearch } from '../utils/helpers';
+import { formatDate, percentage, getRiskColor, sortBy as sortHelper, filterBySearch, ensureArray } from '../utils/helpers';
 import { exportStudentReport, exportAssignmentReport, exportClassReport, generateSummaryReport } from '../utils/export';
 import AssignmentCreator from './AssignmentCreator';
 import AssignmentResults from './AssignmentResults';
@@ -40,10 +40,10 @@ const MentorDashboard = () => {
         const fetchAll = async () => {
             try {
                 const [sRes, aRes, cRes, asRes] = await Promise.all([
-                    api.risk.getStudents(user.id, sortBy, sortOrder),
-                    api.alerts.getForMentor(user.id),
-                    api.classes.getByMentor(user.id),
-                    api.assignments.getByMentor(user.id)
+                    api.risk.getStudents(user.id, sortBy, sortOrder).catch(e => { console.error('Students fetch failed:', e); return []; }),
+                    api.alerts.getForMentor(user.id).catch(e => { console.error('Alerts fetch failed:', e); return []; }),
+                    api.classes.getByMentor(user.id).catch(e => { console.error('Classes fetch failed:', e); return []; }),
+                    api.assignments.getByMentor(user.id).catch(e => { console.error('Assignments fetch failed:', e); return []; })
                 ]);
                 setStudents(sRes || []);
                 setAlerts(aRes || []);
@@ -140,8 +140,8 @@ const MentorDashboard = () => {
     };
 
     const filteredStudents = filterBySearch(students, searchTerm, ['name', 'email']);
-    const openAlerts = alerts.filter(a => !a.resolved_status);
-    const riskAlerts = openAlerts.filter(a => a.alert_type === 'risk_change');
+    const openAlerts = ensureArray(alerts).filter(a => !a.resolved_status);
+    const riskAlerts = ensureArray(openAlerts).filter(a => a.alert_type === 'risk_change');
 
     // View routing
     if (view === 'student-profile' && selectedStudent) {
@@ -233,7 +233,7 @@ const MentorDashboard = () => {
                             <label style={{ fontSize: '0.875rem', color: '#5f6368', display: 'block', marginBottom: '6px' }}>Class</label>
                             <select className="input" value={inviteForm.class_id} onChange={e => setInviteForm({ ...inviteForm, class_id: e.target.value })} required>
                                 <option value="">Select class...</option>
-                                {classes.map(c => <option key={c.class_id} value={c.class_id}>{c.name}</option>)}
+                                {ensureArray(classes).map(c => <option key={c.class_id} value={c.class_id}>{c.name}</option>)}
                             </select>
                         </div>
                         <Input label="Student Email or Username" value={inviteForm.identifier} onChange={e => setInviteForm({ ...inviteForm, identifier: e.target.value })} placeholder="student@example.com" required />
@@ -243,11 +243,11 @@ const MentorDashboard = () => {
             )}
 
             {/* Classes Grid */}
-            {classes.length > 0 && (
+            {ensureArray(classes).length > 0 && (
                 <div style={{ marginBottom: '32px' }}>
                     <h3 style={{ fontSize: '1.125rem', margin: '0 0 16px 0', color: '#202124' }}>Your Classes</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-                        {classes.map(cls => (
+                        {ensureArray(classes).map(cls => (
                             <Card key={cls.class_id} onClick={() => { setSelectedClass(cls.class_id); setView('class-view'); }} style={{ cursor: 'pointer', minHeight: '150px' }}>
                                 <h4 style={{ margin: '0 0 8px', color: '#1a73e8' }}>{cls.name}</h4>
                                 <p style={{ fontSize: '0.875rem', color: '#5f6368', margin: '0 0 12px' }}>{cls.description || 'No description'}</p>
@@ -262,20 +262,20 @@ const MentorDashboard = () => {
 
             {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-                <StatCard title="Total Students" value={students.length} icon={<User size={20} />} />
-                <StatCard title="High Risk" value={students.filter(s => s.risk_level === 'High').length} icon={<ShieldAlert size={20} />} color="#ea4335" />
-                <StatCard title="Open Alerts" value={openAlerts.length} icon={<Bell size={20} />} color="#fbbc04" />
-                <StatCard title="Active Classes" value={classes.length} color="#34a853" />
+                <StatCard title="Total Students" value={ensureArray(students).length} icon={<User size={20} />} />
+                <StatCard title="High Risk" value={ensureArray(students).filter(s => s.risk_level === 'High').length} icon={<ShieldAlert size={20} />} color="#ea4335" />
+                <StatCard title="Open Alerts" value={ensureArray(openAlerts).length} icon={<Bell size={20} />} color="#fbbc04" />
+                <StatCard title="Active Classes" value={ensureArray(classes).length} color="#34a853" />
             </div>
 
             {/* Alerts Section */}
-            {riskAlerts.length > 0 && (
+            {ensureArray(riskAlerts).length > 0 && (
                 <Card style={{ marginBottom: '32px' }}>
                     <h3 style={{ margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Bell size={18} color="var(--primary)" /> Risk Alerts ({riskAlerts.length})
                     </h3>
                     <div style={{ display: 'grid', gap: '12px' }}>
-                        {riskAlerts.slice(0, 5).map(a => (
+                        {ensureArray(riskAlerts).slice(0, 5).map(a => (
                             <div key={a.alert_id} style={{ padding: '12px', background: '#fef7e0', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
                                     <div style={{ fontWeight: 500, marginBottom: '4px' }}>{a.message}</div>
@@ -291,7 +291,7 @@ const MentorDashboard = () => {
             )}
 
             {/* Assignments */}
-            {assignments.length > 0 && (
+            {ensureArray(assignments).length > 0 && (
                 <Card style={{ marginBottom: '32px' }}>
                     <h3 style={{ margin: '0 0 16px' }}>Recent Assignments</h3>
                     <Table>
@@ -305,7 +305,7 @@ const MentorDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {assignments.slice(0, 5).map(a => (
+                            {ensureArray(assignments).slice(0, 5).map(a => (
                                 <tr key={a.assignment_id}>
                                     <td>{a.title}</td>
                                     <td>{a.class_name}</td>
@@ -346,7 +346,7 @@ const MentorDashboard = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredStudents.map(s => (
+                        {ensureArray(filteredStudents).map(s => (
                             <React.Fragment key={s.user_id}>
                                 <tr>
                                     <td>
@@ -371,7 +371,7 @@ const MentorDashboard = () => {
                                             <h4 style={{ margin: '0 0 12px' }}>Recent Activity</h4>
                                             {studentLogs[s.user_id].length > 0 ? (
                                                 <div style={{ display: 'grid', gap: '8px' }}>
-                                                    {studentLogs[s.user_id].slice(0, 5).map(log => (
+                                                    {ensureArray(studentLogs[s.user_id]).slice(0, 5).map(log => (
                                                         <div key={log.log_id} style={{ fontSize: '0.875rem', padding: '8px', background: 'white', borderRadius: '6px' }}>
                                                             <span style={{ fontWeight: 500 }}>{log.activity_type}:</span> {log.description} 
                                                             <span style={{ color: '#5f6368', marginLeft: '8px' }}>({formatDate(log.timestamp)})</span>

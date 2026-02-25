@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Users, FileText, Copy, CheckCircle, Plus } from 'lucide-react';
 import { Card, Button, Badge, Table, Loading } from './shared/UIComponents';
 import { api } from '../utils/api';
-import { formatDate, percentage } from '../utils/helpers';
+import { formatDate, percentage, ensureArray } from '../utils/helpers';
 import AssignmentTaker from './AssignmentTaker';
 import AssignmentCreator from './AssignmentCreator';
 import StudentProfile from './StudentProfile';
@@ -26,18 +26,18 @@ const ClassView = ({ classId, onBack, userRole = 'mentor', userId }) => {
                 
                 if (userRole === 'mentor') {
                     [classRes, membersRes, assignmentsRes, inviteRes] = await Promise.all([
-                        api.classes.getByMentor(userId),
-                        api.classes.getMembers(classId),
-                        api.assignments.getByClass(classId),
-                        api.classes.getInviteCode(classId)
+                        api.classes.getByMentor(userId).catch(e => { console.error('Classes fetch failed:', e); return []; }),
+                        api.classes.getMembers(classId).catch(e => { console.error('Members fetch failed:', e); return []; }),
+                        api.assignments.getByClass(classId).catch(e => { console.error('Assignments fetch failed:', e); return []; }),
+                        api.classes.getInvite(classId).catch(e => { console.error('Invite fetch failed:', e); return {}; })
                     ]);
-                    setClassData((classRes || []).find(c => c.class_id === parseInt(classId)));
+                    setClassData(ensureArray(classRes).find(c => c.class_id === parseInt(classId)));
                     setMembers(membersRes || []);
                     setInviteCode(inviteRes?.invite_code || '');
                 } else {
                     [classRes, assignmentsRes] = await Promise.all([
-                        api.classes.get(classId),
-                        api.assignments.getByClass(classId)
+                        api.classes.get(classId).catch(e => { console.error('Class fetch failed:', e); return null; }),
+                        api.assignments.getByClass(classId).catch(e => { console.error('Assignments fetch failed:', e); return []; })
                     ]);
                     setClassData(classRes);
                 }
@@ -136,8 +136,8 @@ const ClassView = ({ classId, onBack, userRole = 'mentor', userId }) => {
                 {/* Assignments Tab */}
                 {activeTab === 'assignments' && (
                     <Card>
-                        <h3 style={{ margin: '0 0 16px' }}>Assignments ({assignments.length})</h3>
-                        {assignments.length > 0 ? (
+                        <h3 style={{ margin: '0 0 16px' }}>Assignments ({ensureArray(assignments).length})</h3>
+                        {ensureArray(assignments).length > 0 ? (
                             <Table>
                                 <thead>
                                     <tr>
@@ -149,7 +149,7 @@ const ClassView = ({ classId, onBack, userRole = 'mentor', userId }) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {assignments.map(a => (
+                                    {ensureArray(assignments).map(a => (
                                         <tr key={a.assignment_id}>
                                             <td>
                                                 <div style={{ fontWeight: 500 }}>{a.title}</div>
@@ -178,8 +178,8 @@ const ClassView = ({ classId, onBack, userRole = 'mentor', userId }) => {
                 {/* Members Tab (Mentor only) */}
                 {activeTab === 'members' && userRole === 'mentor' && (
                     <Card>
-                        <h3 style={{ margin: '0 0 16px' }}>Members ({members.length})</h3>
-                        {members.length > 0 ? (
+                        <h3 style={{ margin: '0 0 16px' }}>Members ({ensureArray(members).length})</h3>
+                        {ensureArray(members).length > 0 ? (
                             <Table>
                                 <thead>
                                     <tr>
@@ -190,7 +190,7 @@ const ClassView = ({ classId, onBack, userRole = 'mentor', userId }) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {members.map(m => (
+                                    {ensureArray(members).map(m => (
                                         <tr key={m.student_id}>
                                             <td style={{ fontWeight: 500, cursor: 'pointer', color: '#1a73e8' }} onClick={() => { setSelectedStudent(m.student_id); setView('student-profile'); }}>
                                                 {m.student_name}

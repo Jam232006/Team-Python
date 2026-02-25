@@ -1,6 +1,7 @@
 // Toast notification system
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { CheckCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { ensureArray } from '../utils/helpers';
 
 const ToastContext = createContext();
 
@@ -15,7 +16,7 @@ export const ToastProvider = ({ children }) => {
 
     const addToast = useCallback((message, type = 'info', duration = 3000) => {
         const id = Date.now();
-        setToasts(prev => [...prev, { id, message, type, duration }]);
+        setToasts(prev => [...ensureArray(prev), { id, message, type, duration }]);
         
         if (duration > 0) {
             setTimeout(() => {
@@ -25,7 +26,7 @@ export const ToastProvider = ({ children }) => {
     }, []);
 
     const removeToast = useCallback((id) => {
-        setToasts(prev => prev.filter(t => t.id !== id));
+        setToasts(prev => ensureArray(prev).filter(t => t.id !== id));
     }, []);
 
     const success = useCallback((message, duration) => addToast(message, 'success', duration), [addToast]);
@@ -37,7 +38,7 @@ export const ToastProvider = ({ children }) => {
         <ToastContext.Provider value={{ success, error, info, warning }}>
             {children}
             <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {toasts.map(toast => (
+                {ensureArray(toasts).map(toast => (
                     <Toast key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
                 ))}
             </div>

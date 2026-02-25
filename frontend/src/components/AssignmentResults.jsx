@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Users, CheckCircle, Clock, AlertTriangle, ChevronDown, ChevronRight, XCircle } from 'lucide-react';
 import { Card, Button, Badge, Table, Loading, StatCard } from './shared/UIComponents';
 import { api } from '../utils/api';
-import { formatDate, percentage, getRiskColor } from '../utils/helpers';
+import { formatDate, percentage, getRiskColor, ensureArray } from '../utils/helpers';
 import StudentProfile from './StudentProfile';
 
 const AssignmentResults = ({ assignmentId, onBack }) => {
@@ -16,9 +16,11 @@ const AssignmentResults = ({ assignmentId, onBack }) => {
         const fetchResults = async () => {
             try {
                 const res = await api.assignments.getClassResults(assignmentId);
-                setData(res);
+                setData(res || { assignment: {}, submissions: [], questions: [], statistics: {}, high_risk_students: [] });
             } catch (err) {
+                console.error('Failed to load results:', err);
                 alert('Failed to load results');
+                setData({ assignment: {}, submissions: [], questions: [], statistics: {}, high_risk_students: [] });
             }
             setLoading(false);
         };
@@ -26,12 +28,13 @@ const AssignmentResults = ({ assignmentId, onBack }) => {
     }, [assignmentId]);
 
     if (loading) return <Loading />;
+    if (!data) return <div style={{ padding: '60px', textAlign: 'center', color: '#666' }}>No data available</div>;
 
     if (view === 'student-profile' && selectedStudent) {
         return <StudentProfile studentId={selectedStudent} onBack={() => { setView('overview'); setSelectedStudent(null); }} />;
     }
 
-    const { assignment, submissions, questions, statistics, high_risk_students } = data;
+    const { assignment = {}, submissions = [], questions = [], statistics = {}, high_risk_students = [] } = data || {};
 
     return (
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px' }}>
@@ -55,13 +58,13 @@ const AssignmentResults = ({ assignmentId, onBack }) => {
             </div>
 
             {/* High Risk Students Alert */}
-            {high_risk_students.length > 0 && (
+            {ensureArray(high_risk_students).length > 0 && (
                 <Card style={{ marginBottom: '32px', background: '#fef7e0', border: '1px solid #fbbc04' }}>
                     <h3 style={{ margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <AlertTriangle size={18} color="#fbbc04" /> High Risk Students ({high_risk_students.length})
+                        <AlertTriangle size={18} color="#fbbc04" /> High Risk Students ({ensureArray(high_risk_students).length})
                     </h3>
                     <div style={{ display: 'grid', gap: '8px' }}>
-                        {high_risk_students.map(s => (
+                        {ensureArray(high_risk_students).map(s => (
                             <div key={s.student_id} style={{ padding: '12px', background: 'white', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
                                     <div style={{ fontWeight: 500, cursor: 'pointer', color: '#1a73e8' }} onClick={() => { setSelectedStudent(s.student_id); setView('student-profile'); }}>
@@ -82,8 +85,8 @@ const AssignmentResults = ({ assignmentId, onBack }) => {
             {/* Question Performance */}
             <Card style={{ marginBottom: '32px' }}>
                 <h3 style={{ margin: '0 0 16px' }}>Question Performance</h3>
-                {questions.map((q, idx) => {
-                    const correctCount = submissions.filter(s => {
+                {ensureArray(questions).map((q, idx) => {
+                    const correctCount = ensureArray(submissions).filter(s => {
                         const sub = s.submission_id;
                         return s.status === 'submitted'; // simplified - would need actual answer checking
                     }).length;
@@ -129,7 +132,7 @@ const AssignmentResults = ({ assignmentId, onBack }) => {
 
             {/* Student Submissions */}
             <Card>
-                <h3 style={{ margin: '0 0 16px' }}>Student Submissions ({submissions.length})</h3>
+                <h3 style={{ margin: '0 0 16px' }}>Student Submissions ({ensureArray(submissions).length})</h3>
                 <Table>
                     <thead>
                         <tr>
@@ -142,7 +145,7 @@ const AssignmentResults = ({ assignmentId, onBack }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {submissions.map(s => {
+                        {ensureArray(submissions).map(s => {
                             const pct = s.score != null ? percentage(s.score, s.max_score) : null;
                             return (
                                 <tr key={s.submission_id}>
