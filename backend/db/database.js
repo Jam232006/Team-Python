@@ -291,18 +291,5 @@ const dbAsync = {
   }
 };
 
-// Migrations for new columns
-db.run(`ALTER TABLE assignments ADD COLUMN active_from DATETIME`, (err) => {
-    if (err && !err.message.includes('duplicate column')) {
-        console.error('Migration warning (active_from):', err.message);
-    }
-});
-
-db.run(`ALTER TABLE assignments ADD COLUMN active_until DATETIME`, (err) => {
-    if (err && !err.message.includes('duplicate column')) {
-        console.error('Migration warning (active_until):', err.message);
-    }
-});
-
 module.exports = db;
 module.exports.dbAsync = dbAsync;
