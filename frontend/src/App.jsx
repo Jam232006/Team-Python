@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Login from './components/Login';
 import AdminDashboard from './components/AdminDashboard';
 import MentorDashboard from './components/MentorDashboard';
@@ -67,49 +68,51 @@ function App() {
     };
 
     return (
-        <div className="shield-root">
-            <header className="obsidian-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{
-                        width: '40px',
-                        height: '40px',
-                        background: 'linear-gradient(135deg, #6e00ff, #00ff9f)',
-                        borderRadius: '10px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
-                        <ShieldCheck color="white" size={24} />
+        <ToastProvider>
+            <div className="shield-root">
+                <header className="obsidian-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            background: 'linear-gradient(135deg, #6e00ff, #00ff9f)',
+                            borderRadius: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <ShieldCheck color="white" size={24} />
+                        </div>
+                        <h1 className="title-xl" style={{ fontSize: '1.5rem', letterSpacing: '0.05em' }}>InsightShield</h1>
                     </div>
-                    <h1 className="title-xl" style={{ fontSize: '1.5rem', letterSpacing: '0.05em' }}>InsightShield</h1>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-                    <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-pure)' }}>{user?.name?.toUpperCase() || 'USER'}</p>
-                        <p style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.1em' }}>{(user?.role || 'null').toUpperCase()} LEVEL ACCESS</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                        <div style={{ textAlign: 'right' }}>
+                            <p style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-pure)' }}>{user?.name?.toUpperCase() || 'USER'}</p>
+                            <p style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.1em' }}>{(user?.role || 'null').toUpperCase()} LEVEL ACCESS</p>
+                        </div>
+                        <button
+                            onClick={logout}
+                            style={{
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid var(--glass-border)',
+                                color: 'var(--text-muted)',
+                                cursor: 'pointer',
+                                padding: '10px',
+                                borderRadius: '12px',
+                                transition: 'all 0.3s'
+                            }}
+                        >
+                            <LogOut size={20} />
+                        </button>
                     </div>
-                    <button
-                        onClick={logout}
-                        style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid var(--glass-border)',
-                            color: 'var(--text-muted)',
-                            cursor: 'pointer',
-                            padding: '10px',
-                            borderRadius: '12px',
-                            transition: 'all 0.3s'
-                        }}
-                    >
-                        <LogOut size={20} />
-                    </button>
-                </div>
-            </header>
+                </header>
 
-            <main>
-                {renderDashboard()}
-            </main>
-        </div>
+                <main>
+                    {renderDashboard()}
+                </main>
+            </div>
+        </ToastProvider>
     );
 }
 

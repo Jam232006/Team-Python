@@ -7,3 +7,6 @@ package-lock.json
 build/
 .vscode/
 .idea/
+
+# Uncomment to exclude demo files in production deployments:
+# demo/
